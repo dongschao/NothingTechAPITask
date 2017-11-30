@@ -9,4 +9,7 @@ public interface FacebookPageRepository extends MongoRepository<FacebookPage,Str
 
     Page<FacebookPage> queryByFollowCountGreaterThanEqual(Integer followerCount,Pageable pageable);
 
+    Page<FacebookPage> queryByCountryAndFollowCountGreaterThanEqual(String country,
+                                                                    Integer followerCount,Pageable pageable);
+
 }

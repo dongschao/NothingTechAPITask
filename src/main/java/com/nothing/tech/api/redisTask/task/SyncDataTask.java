@@ -3,9 +3,11 @@ package com.nothing.tech.api.redisTask.task;
 
 import com.alibaba.fastjson.JSON;
 import com.nothing.tech.api.redisTask.common.Constant;
+import com.nothing.tech.api.redisTask.model.CountryStandard;
 import com.nothing.tech.api.redisTask.model.FBPageBasic;
 import com.nothing.tech.api.redisTask.model.FBPageQueryParam;
 import com.nothing.tech.api.redisTask.model.FacebookPage;
+import com.nothing.tech.api.redisTask.service.CountryStandardService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,75 +37,81 @@ public class SyncDataTask {
     @Value("${page.sync.every.count}")
     private Integer count;
 
-    @Value("${page.sync.follow.count}")
-    private Integer followCount;
+    @Autowired
+    private CountryStandardService countryStandardService;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 60000)
     public void syncDataFromMongo(){
         LOGGER.info("start syncDataFromMongo!!");
-        FBPageQueryParam fbPageQueryParam = new FBPageQueryParam();
-        fbPageQueryParam.setCount(count);
-        fbPageQueryParam.setFollowCount(followCount);
-        fbPageQueryParam.setOrientation(1);
-        /**
-         * 首先判断是否为首次同步，即判断redis中是否存在同步过的ID
-         * */
-        String syncID = (String) redisTemplate.opsForValue().get(Constant.SYNC_ID);
-        if (StringUtils.isEmpty(syncID)){
-            LOGGER.info("首次执行操作！");
-            fbPageQueryParam.setId("");
-            fbPageQueryParam.setCountry("");
-            List<FacebookPage> facebookPageList =
-                    facebookPageService.queryByPageParam(fbPageQueryParam);
-            /**
-             * 判断数据库中是否有数据
-             * */
-            if (facebookPageList!=null&&facebookPageList.size()>0){
-                /**
-                 * 第一步，将查询数据保存到redis中
-                 * */
-                saveDate2Redis(facebookPageList);
-                /**
-                 * 第二步，更新已经获取过的ID信息，便于下次查询
-                 * */
-                FacebookPage facebookPageLast =
-                        facebookPageList.get(facebookPageList.size()-1);
-                syncID = facebookPageLast.getId();
-                redisTemplate.opsForValue().set(Constant.SYNC_ID,syncID);
-            }
+
+        List<CountryStandard> countryStandardList = countryStandardService.queryAll();
+        if (countryStandardList.size()==0){
+            LOGGER.info("国家指定采集标准未指定");
+            return;
         }
-        while (true){
-            syncID=(String) redisTemplate.opsForValue().get(Constant.SYNC_ID);
-            LOGGER.info("获取上一次最后一条的ID:"+syncID);
-            fbPageQueryParam.setId(syncID);
-            List<FacebookPage> facebookPageList =
-                    facebookPageService.queryByPageParam(fbPageQueryParam);
-            LOGGER.info("fbPageQueryParam:"+ JSON.toJSONString(fbPageQueryParam));
-            LOGGER.info("查询获得的pageList长度:"+facebookPageList.size());
-            if (facebookPageList.size()>0){
+
+        for (CountryStandard countryStandard:countryStandardList){
+            String country = countryStandard.getCountry();
+            FBPageQueryParam fbPageQueryParam = new FBPageQueryParam();
+            fbPageQueryParam.setCount(count);
+            fbPageQueryParam.setFollowCount(countryStandard.getStandard());
+            fbPageQueryParam.setCountry(country);
+            fbPageQueryParam.setOrientation(1);
+            /**
+             * 首先判断是否为首次同步，即判断redis中是否存在同步过的ID
+             * */
+            String syncID = (String) redisTemplate.opsForValue().get(
+                    Constant.SYNC_ID+country);
+            if (StringUtils.isEmpty(syncID)){
+                fbPageQueryParam.setId(null);
+                List<FacebookPage> facebookPageList =
+                        facebookPageService.queryByPageParam(fbPageQueryParam);
                 /**
-                 * 第一步，将查询数据保存到redis中
+                 * 判断数据库中是否有数据
                  * */
-                saveDate2Redis(facebookPageList);
-                /**
-                 * 第二步，更新已经获取过的ID信息，便于下次查询
-                 * */
-                FacebookPage facebookPageLast =
-                        facebookPageList.get(facebookPageList.size()-1);
-                syncID = facebookPageLast.getId();
-                redisTemplate.opsForValue().set(Constant.SYNC_ID,syncID);
-            }else {
-                try {
-                    Thread.sleep(30000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (facebookPageList!=null&&facebookPageList.size()>0){
+                    /**
+                     * 第一步，将查询数据保存到redis中
+                     * */
+                    saveDate2Redis(facebookPageList,countryStandard);
+                    /**
+                     * 第二步，更新已经获取过的ID信息，便于下次查询
+                     * */
+                    FacebookPage facebookPageLast =
+                            facebookPageList.get(facebookPageList.size()-1);
+                    syncID = facebookPageLast.getId();
+                    redisTemplate.opsForValue().set(Constant.SYNC_ID+country,syncID);
+                }
+            }
+            while (true){
+                syncID=(String) redisTemplate.opsForValue().get(Constant.SYNC_ID+country);
+                LOGGER.info("获取上一次最后一条的ID:"+syncID);
+                fbPageQueryParam.setId(syncID);
+                List<FacebookPage> facebookPageList =
+                        facebookPageService.queryByPageParam(fbPageQueryParam);
+                LOGGER.info("fbPageQueryParam:"+ JSON.toJSONString(fbPageQueryParam));
+                LOGGER.info("查询获得的pageList长度:"+facebookPageList.size());
+                if (facebookPageList.size()>0){
+                    /**
+                     * 第一步，将查询数据保存到redis中
+                     * */
+                    saveDate2Redis(facebookPageList,countryStandard);
+                    /**
+                     * 第二步，更新已经获取过的ID信息，便于下次查询
+                     * */
+                    FacebookPage facebookPageLast =
+                            facebookPageList.get(facebookPageList.size()-1);
+                    syncID = facebookPageLast.getId();
+                    redisTemplate.opsForValue().set(Constant.SYNC_ID+country,syncID);
+                }else {
+                    break;
                 }
             }
         }
 
     }
 
-    public void saveDate2Redis(List<FacebookPage> facebookPageList){
+    public void saveDate2Redis(List<FacebookPage> facebookPageList,CountryStandard countryStandard){
         for (FacebookPage facebookPage:facebookPageList){
             Set<ZSetOperations.TypedTuple<Object>> tupleSet = new HashSet<>();
             FBPageBasic fbPageBasic = new FBPageBasic(facebookPage.getFbPageId(),
@@ -111,8 +119,8 @@ public class SyncDataTask {
             ZSetOperations.TypedTuple<Object> fbUserBasicTypedTuple =
                     new DefaultTypedTuple<>(fbPageBasic, (double) System.nanoTime());
             tupleSet.add(fbUserBasicTypedTuple);
-            redisTemplate.opsForZSet().add(Constant.SPECIAL_PAGE+followCount
-                    +":"+facebookPage.getCountry(),tupleSet);
+            redisTemplate.opsForZSet().add(Constant.SPECIAL_PAGE+
+                    countryStandard.getStandard()+":"+countryStandard.getCountry(),tupleSet);
         }
     }
 }
