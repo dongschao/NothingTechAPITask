@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="NothingTechAPITask:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="nothingTechAPITask.war">
+      <element id="artifact" artifact-name="NothingTechAPITask:war exploded" />
+    </root>
+  </artifact>
+</component>
