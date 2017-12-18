@@ -20,9 +20,9 @@ public class UpdatePostShortUrlToPostLongUrl {
     private String updateShortUrl = "http://db.anyelse.com/nothingTech/nothing/collect/facebook/page/post/updateShortURL";//更新短连接的接口
     private String result;
     private List<PostShortWebUrl> postShortWebUrlList;
-    private int requestNum = 50;//每次请求50条
+    private int requestNum = 10;//每次请求50条
 
-    @Scheduled(fixedDelay = 1000)//方法执行后延迟1秒再次执行获取短连接
+    @Scheduled(fixedDelay = 60000)//方法执行后延迟1秒再次执行获取短连接
     public void getShortUrl() {
         try {
             result = HttpAccessUtil.getShortUrlMethod(queryShortUrl, requestNum);
@@ -55,8 +55,13 @@ public class UpdatePostShortUrlToPostLongUrl {
             try {
                 String shortUrl = postShortWebUrl.getShortUrl().trim().toString().replace(" ", "");//去除短连接空格
                 if (shortUrl != null) {
-                    longResult = HttpAccessUtil.getLongUrlMethod(shortUrl);//获取长连接
+                   longResult = HttpAccessUtil.get(shortUrl);//获取长连接
                     if (longResult != null) {
+                        System.out.println("--------------------------------");
+                        System.out.println(longResult);
+                        System.out.println("--------------------------------");
+
+
                         updateLongUrl(postShortWebUrl.getPostId(), longResult);//更新链接
                     } else {
                         continue;
@@ -69,8 +74,6 @@ public class UpdatePostShortUrlToPostLongUrl {
                 e.printStackTrace();
                 continue;
             }
-
-
         }
 
         postShortWebUrlList.clear();

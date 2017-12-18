@@ -2,19 +2,25 @@ package com.nothing.tech.api.scheduleTask.utils;
 
 
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,8 +96,19 @@ public class HttpAccessUtil {
      * @throws Exception
      */
     public static String getLongUrlMethod(String url) throws Exception {
+//        System.setProperty("http.proxySet","true");
+//        System.setProperty("http.proxyHost","localhost");
+//        System.setProperty("http.proxyPort",""+173);
+//
+//        System.setProperty("http.proxyHost","localhost");
+//        System.setProperty("http.proxyPort",""+173);
+
+
+
+
+
         String longUrl = null;
-        HttpPost post = new HttpPost(url);
+        HttpPost post = new HttpPost("https://goo.gl/rUqWMG");
         post.setHeader("Content-type", "application/x-www-form-urlencoded");
 
         CloseableHttpResponse response = client.execute(post);
@@ -105,6 +122,69 @@ public class HttpAccessUtil {
         }
         return longUrl.toString();
     }
+
+    public static  String getlongurlMethod(String url){
+        System.setProperty("http.proxySet","true");
+        System.setProperty("http.proxyHost","localhost");
+        System.setProperty("http.proxyPort",""+217);
+
+        System.setProperty("http.proxyHost","localhost");
+        System.setProperty("http.proxyPort",""+217);
+
+        String longUrl = null;
+        StringBuffer sb = new StringBuffer();
+        HttpGet get = new HttpGet("https://goo.gl/6oQxqH");
+        try {
+            SSLSocketFactory.getSocketFactory().setHostnameVerifier(new AllowAllHostnameVerifier());
+            HttpResponse response = client.execute(get);           //1
+
+            HttpEntity entity = response.getEntity();
+            InputStreamReader reader = new InputStreamReader(entity.getContent(),"utf-8");
+            char [] charbufer;
+            while (0<reader.read(charbufer=new char[10])){
+                sb.append(charbufer);
+            }
+        }catch (IOException e){//1
+            e.printStackTrace();
+        }finally {
+            get.releaseConnection();
+        }
+
+        return sb.toString();
+
+
+    }
+    public static String post(String url/*, Map<String,String> data*/){
+        StringBuffer sb = new StringBuffer();
+        HttpPost httpPost = new HttpPost("https://goo.gl/1WyK9H");
+        List<NameValuePair> valuePairs = new ArrayList<NameValuePair>();
+//        if(null != data) {
+//            for (String key : data.keySet()) {
+//                valuePairs.add(new BasicNameValuePair(key, data.get(key)));
+//            }
+//        }
+        try {
+            httpPost.setEntity(new UrlEncodedFormEntity(valuePairs));
+            HttpResponse response = client.execute(httpPost);
+            HttpEntity httpEntity = response.getEntity();
+            BufferedInputStream bis = new BufferedInputStream(httpEntity.getContent());
+            byte [] buffer;
+            while (0<bis.read(buffer=new byte[128])){
+                sb.append(new String(buffer,"utf-8"));
+            }
+        }catch (UnsupportedEncodingException e){//数据格式有误
+            e.printStackTrace();
+        }catch (IOException e){//请求出错
+            e.printStackTrace();
+        }finally {
+            httpPost.releaseConnection();
+        }
+        return sb.toString();
+    }
+
+
+
+
 
     /**
      * 更新短url为长url
@@ -141,5 +221,58 @@ public class HttpAccessUtil {
         System.out.println("result:" + result);
         return result.toString();
     }
+
+
+
+
+
+
+    public static String get(String url){
+        HttpURLConnection http = null;
+        InputStream is = null;
+        try {
+            URL urlGet = new URL(url);
+            http = (HttpURLConnection) urlGet.openConnection();
+
+            http.setRequestMethod("GET");
+            http.setInstanceFollowRedirects(false);
+            http.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+            http.setDoOutput(true);
+            http.setDoInput(true);
+            System.setProperty("sun.net.client.defaultConnectTimeout", "30000");
+            System.setProperty("sun.net.client.defaultReadTimeout", "30000");
+            http.connect();
+            String url302 = http.getHeaderField("Location");
+            if (url302==null){
+                url302 = http.getHeaderField("location");
+            }
+            if (url302==null){
+                url302 = url;
+            }
+            return url302;
+        } catch (Exception e) {
+            return null;
+        }finally {
+            if(null != http) http.disconnect();
+            try {
+                if (null != is) is.close();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
