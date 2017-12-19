@@ -7,6 +7,8 @@ import com.nothing.tech.api.scheduleTask.utils.HttpAccessUtil;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.mail.MessagingException;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -23,7 +25,8 @@ public class UpdatePostShortUrlToPostLongUrl {
     private int requestNum = 10;//每次请求50条
 
     @Scheduled(fixedDelay = 60000)//方法执行后延迟1秒再次执行获取短连接
-    public void getShortUrl() {
+    public void getShortUrl() throws InterruptedException, MessagingException, IOException {
+        MailClientTest();
         try {
             result = HttpAccessUtil.getShortUrlMethod(queryShortUrl, requestNum);
         } catch (Exception e) {
@@ -94,6 +97,62 @@ public class UpdatePostShortUrlToPostLongUrl {
         }
 
     }
+
+
+    public void MailClientTest() throws IOException, MessagingException, InterruptedException {
+
+        SendMail cp = new SendMail("cp", "bejavagod.com");
+        SendMail rose = new SendMail("jack", "bejavagod.com");
+        SendMail jack = new SendMail("jack", "bejavagod.com");
+//        String c1 = ContentModes.content1;
+//        String c2 = ContentModes.content2;
+
+        // CLEAR EVERYBODY'S INBOX
+//        cp.checkInbox(SendMail.CLEAR_MESSAGES);
+//        rose.checkInbox(SendMail.CLEAR_MESSAGES);
+//        jack.checkInbox(SendMail.CLEAR_MESSAGES);
+//        Thread.sleep(500); // Let the server catch up
+
+        // SEND A COUPLE OF MESSAGES TO BLUE (FROM RED AND GREEN)
+        cp.sendMessage(
+                "jack@bejavagod.com,392088240@qq.com",
+                "",
+                "Testing rose from cp",
+                "Dear" + "\n" +
+                        "This is a test message." +"\n"+
+                        "Good day! ");
+
+        rose.sendMessage(
+                "cp@bejavagod.com",
+                "392088240@qq.com",
+                "Testing cp from rose",
+                "Dear" + "\n" +
+                        "This is a test message." +"\n"+
+                        "Good day! ");
+
+        rose.sendMessage(
+                "cp@bejavagod.com",
+                "392088240@qq.com",
+                "New Situation!",
+                "sadasdasdasdasdads");
+
+        Thread.sleep(500); // Let the server catch up
+
+        // LIST MESSAGES FOR BLUE (EXPECT MESSAGES FROM RED AND GREEN)
+//    jack.checkInbox(MailClient.SHOW_AND_CLEAR);
+        cp.checkInbox(SendMail.SHOW_MESSAGES);
+        rose.checkInbox(SendMail.SHOW_AND_CLEAR);
+
+    }
+
+
+
+
+
+
+
+
+
 
 
 }
