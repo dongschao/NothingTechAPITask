@@ -7,7 +7,7 @@ import java.util.Properties;
 /**
  * Created by admin on 2017/12/18.
  */
-public class SendMail extends Authenticator
+public class SendMailController extends Authenticator
 {
 //    private MailSender mailSender;
 //    public void setMailSender(MailSender mailSender) {
@@ -27,7 +27,7 @@ public class SendMail extends Authenticator
 //    private Properties prop;
 //    private Message message;
 //
-//    public SendMail(String mailServer, String mailPort, String username, String password) {
+//    public SendMailController(String mailServer, String mailPort, String username, String password) {
 //        this.mailServer = mailServer;
 //        this.mailPort = mailPort;
 //        this.username = username;
@@ -81,12 +81,12 @@ public class SendMail extends Authenticator
     protected Session session;
     protected PasswordAuthentication authentication;
 
-    public SendMail(String user, String host)
+    public SendMailController(String user, String host)
     {
         this(user, host, false);
     }
 
-    public SendMail(String user, String host, boolean debug)
+    public SendMailController(String user, String host, boolean debug)
     {
         from = user + '@' + host;
         authentication = new PasswordAuthentication(user, user);  //由于创建的user和password一样，所以传两个user就OK
@@ -104,11 +104,11 @@ public class SendMail extends Authenticator
         return authentication;
     }
 
-    public void sendMessage(
-            String to, String cc, String subject, String content)
-            throws MessagingException
-    {
-        System.out.println("SENDING message from " + from + " to " + to);
+
+
+    public void sendMessage( String to, String cc, String subject,String content
+    )throws MessagingException{
+        System.out.println("SENDING message from " + from + " to " +to);
         System.out.println();
         MimeMessage msg = new MimeMessage(session);
         msg.addRecipients(Message.RecipientType.TO, to);  //添加收件人
@@ -117,7 +117,6 @@ public class SendMail extends Authenticator
         msg.setText(content);
         Transport.send(msg);
     }
-
     public void checkInbox(int mode)
             throws MessagingException, IOException
     {
@@ -157,19 +156,4 @@ public class SendMail extends Authenticator
         store.close();
         System.out.println();
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

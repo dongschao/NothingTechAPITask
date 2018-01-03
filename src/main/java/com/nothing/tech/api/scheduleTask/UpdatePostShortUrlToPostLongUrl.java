@@ -25,8 +25,7 @@ public class UpdatePostShortUrlToPostLongUrl {
     private int requestNum = 10;//每次请求50条
 
     @Scheduled(fixedDelay = 60000)//方法执行后延迟1秒再次执行获取短连接
-    public void getShortUrl() throws InterruptedException, MessagingException, IOException {
-        MailClientTest();
+    public void getShortUrl() throws Exception {
         try {
             result = HttpAccessUtil.getShortUrlMethod(queryShortUrl, requestNum);
         } catch (Exception e) {
@@ -60,11 +59,7 @@ public class UpdatePostShortUrlToPostLongUrl {
                 if (shortUrl != null) {
                    longResult = HttpAccessUtil.get(shortUrl);//获取长连接
                     if (longResult != null) {
-                        System.out.println("--------------------------------");
                         System.out.println(longResult);
-                        System.out.println("--------------------------------");
-
-
                         updateLongUrl(postShortWebUrl.getPostId(), longResult);//更新链接
                     } else {
                         continue;
@@ -100,48 +95,43 @@ public class UpdatePostShortUrlToPostLongUrl {
 
 
     public void MailClientTest() throws IOException, MessagingException, InterruptedException {
-
-        SendMail cp = new SendMail("cp", "bejavagod.com");
-        SendMail rose = new SendMail("jack", "bejavagod.com");
-        SendMail jack = new SendMail("jack", "bejavagod.com");
-//        String c1 = ContentModes.content1;
+//        SendMailController cp = new SendMailController("cp", "bejavagod.com");
+//        SendMailController rose = new SendMailController("jack", "bejavagod.com");
+//        SendMailController jack = new SendMailController("jack", "bejavagod.com");
+////        String c1 = ContentModes.content1;
 //        String c2 = ContentModes.content2;
 
         // CLEAR EVERYBODY'S INBOX
-//        cp.checkInbox(SendMail.CLEAR_MESSAGES);
-//        rose.checkInbox(SendMail.CLEAR_MESSAGES);
-//        jack.checkInbox(SendMail.CLEAR_MESSAGES);
+//        cp.checkInbox(SendMailController.CLEAR_MESSAGES);
+//        rose.checkInbox(SendMailController.CLEAR_MESSAGES);
+//        jack.checkInbox(SendMailController.CLEAR_MESSAGES);
 //        Thread.sleep(500); // Let the server catch up
-
         // SEND A COUPLE OF MESSAGES TO BLUE (FROM RED AND GREEN)
-        cp.sendMessage(
-                "jack@bejavagod.com,392088240@qq.com",
-                "",
-                "Testing rose from cp",
-                "Dear" + "\n" +
-                        "This is a test message." +"\n"+
-                        "Good day! ");
+//        cp.sendMessage(
+//                "jack@bejavagod.com,392088240@qq.com",
+//                "",
+//                "Testing rose from cp",
+//                "Dear" + "\n" +
+//                        "This is a test message." +"\n"+
+//                        "Good day! ");
+//        rose.sendMessage(
+//               "cp@bejavagod.com",
+//                "392088240@qq.com",
+//                "Testing cp from rose",
+//                "Dear" + "\n" +
+//                        "This is a test message." +"\n"+
+//                        "Good day! ");
+//        rose.sendMessage(
+//                "cp@bejavagod.com",
+//                "392088240@qq.com",
+//                "New Situation!",
+//                "sadasdasdasdasdads");
 
-        rose.sendMessage(
-                "cp@bejavagod.com",
-                "392088240@qq.com",
-                "Testing cp from rose",
-                "Dear" + "\n" +
-                        "This is a test message." +"\n"+
-                        "Good day! ");
-
-        rose.sendMessage(
-                "cp@bejavagod.com",
-                "392088240@qq.com",
-                "New Situation!",
-                "sadasdasdasdasdads");
-
-        Thread.sleep(500); // Let the server catch up
-
+        // Let the server catch up
         // LIST MESSAGES FOR BLUE (EXPECT MESSAGES FROM RED AND GREEN)
 //    jack.checkInbox(MailClient.SHOW_AND_CLEAR);
-        cp.checkInbox(SendMail.SHOW_MESSAGES);
-        rose.checkInbox(SendMail.SHOW_AND_CLEAR);
+//        cp.checkInbox(SendMailController.SHOW_MESSAGES);
+//        rose.checkInbox(SendMailController.SHOW_AND_CLEAR);
 
     }
 

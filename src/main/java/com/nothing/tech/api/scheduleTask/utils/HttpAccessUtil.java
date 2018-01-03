@@ -239,6 +239,7 @@ public class HttpAccessUtil {
             http.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
             http.setDoOutput(true);
             http.setDoInput(true);
+            http.setReadTimeout(10);
             System.setProperty("sun.net.client.defaultConnectTimeout", "30000");
             System.setProperty("sun.net.client.defaultReadTimeout", "30000");
             http.connect();
@@ -251,6 +252,9 @@ public class HttpAccessUtil {
             }
             return url302;
         } catch (Exception e) {
+           System.out.println(e.getMessage());
+
+
             return null;
         }finally {
             if(null != http) http.disconnect();
