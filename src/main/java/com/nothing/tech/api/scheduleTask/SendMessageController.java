@@ -7,13 +7,16 @@ import com.dingtalk.api.DingTalkClient;
 import com.dingtalk.api.request.CorpMessageCorpconversationAsyncsendRequest;
 import com.dingtalk.api.request.CorpMessageCorpconversationGetsendprogressRequest;
 import com.dingtalk.api.request.CorpMessageCorpconversationGetsendresultRequest;
+import com.dingtalk.api.request.CorpRoleListRequest;
 import com.dingtalk.api.response.CorpMessageCorpconversationAsyncsendResponse;
 import com.dingtalk.api.response.CorpMessageCorpconversationGetsendprogressResponse;
 import com.dingtalk.api.response.CorpMessageCorpconversationGetsendresultResponse;
+import com.dingtalk.api.response.CorpRoleListResponse;
 import com.nothing.tech.api.scheduleTask.model.ResultToken;
 import com.nothing.tech.api.scheduleTask.model.RobotGroupMessage;
 import com.nothing.tech.api.scheduleTask.model.RobotGroupMessageAt;
 import com.nothing.tech.api.scheduleTask.model.RobotGroupMessageText;
+import com.nothing.tech.api.scheduleTask.service.DDPersonMessageService;
 import com.nothing.tech.api.scheduleTask.utils.HttpUtil;
 import com.taobao.api.ApiException;
 import org.apache.commons.lang.StringUtils;
@@ -32,11 +35,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -44,11 +49,20 @@ import java.util.List;
 @CrossOrigin(origins = "*", maxAge = 10800)
 @RestController
 public class SendMessageController {
+
+    @Autowired
+    private DDPersonMessageService personMessageService;
+
+
+
+
+
+
     // CorpId
-    private static String CorpId = "ding4e90c20927bcf74335c2f4657eb6378f";
+    private static String CorpId = "ding115ab83c63dcc98c35c2f4657eb6378f";
     //CorpSecret
-    private static String CorpSecret = "6Ah-fZ_HBP5diNVCYti4xxWTkHt_yfexge22C1prXFoBcG8KsZotjMpp254lJBXq";
-    private static Long AgentId = 155179175L;
+    private static String CorpSecret = "N497jceE3LAncfTka6tVoHq8othivgpmLntxyWmcc34i1kLNGh76A5AwovLKb0NF";
+    private static Long AgentId = 157397978L;
     @RequestMapping(value = "/nothing/mail/send", method = RequestMethod.POST)
     @ResponseBody
     public  String SendEmail(@RequestParam String to,@RequestParam String cc,@RequestParam String subject,@RequestParam String content) throws MessagingException, IOException, InterruptedException {
@@ -96,7 +110,22 @@ public class SendMessageController {
     @RequestMapping(value = "/nothing/ddNoticeMessage/send", method = RequestMethod.POST)
     @ResponseBody
     public String SendEnterpriseNotice(@RequestParam String content,@RequestParam String users) throws ApiException {
+        List<String>userList= new ArrayList<>();
+        String[] userArray = users.split(",");
 
+        for (String a:userArray) {
+            a.trim();
+            String user = personMessageService.queryAllPerson(a);
+            userList.add(user);
+        }
+        StringBuffer sb = new StringBuffer();
+        for(int i = 0; i < userList.size(); i++){
+            sb.append(userList.get(i));
+            if (!(i==userList.size()-1)){
+                sb.append(",");
+            }
+        }
+        users = sb.toString();
         String accessToken = getAccessToken();
         DingTalkClient client = new DefaultDingTalkClient("https://eco.taobao.com/router/rest");
         CorpMessageCorpconversationAsyncsendRequest req = new CorpMessageCorpconversationAsyncsendRequest();
@@ -133,9 +162,7 @@ public class SendMessageController {
 
         try {
             response = httpClient.execute(httpPost, new BasicHttpContext());
-
             if (response.getStatusLine().getStatusCode() != 200) {
-
                 System.out.println("request url failed, http code=" + response.getStatusLine().getStatusCode()
                         + ", url=" + url);
                 return null;
@@ -194,7 +221,17 @@ public class SendMessageController {
         System.out.println(rsp.getBody());
         return rsp.getBody();
     }
-
+    @RequestMapping(value = "/nothing/ddNoticeMessage/getPersonMessage", method = RequestMethod.POST)
+    @ResponseBody
+    public String getPersonMessage(@RequestParam Long offset) throws ApiException {
+        DingTalkClient client = new DefaultDingTalkClient("https://eco.taobao.com/router/rest");
+        CorpRoleListRequest req = new CorpRoleListRequest();
+        req.setSize(20L);
+        req.setOffset(offset);
+        CorpRoleListResponse rsp = client.execute(req, "06fd49440af03b7f9619ae07e8f7c631");
+        System.out.println(rsp.getBody());
+        return rsp.getBody();
+    }
 
 
 }
