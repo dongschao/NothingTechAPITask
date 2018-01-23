@@ -52,17 +52,11 @@ public class SendMessageController {
 
     @Autowired
     private DDPersonMessageService personMessageService;
-
-
-
-
-
-
     // CorpId
-    private static String CorpId = "ding115ab83c63dcc98c35c2f4657eb6378f";
+    private static final String CorpId = "ding115ab83c63dcc98c35c2f4657eb6378f";
     //CorpSecret
-    private static String CorpSecret = "N497jceE3LAncfTka6tVoHq8othivgpmLntxyWmcc34i1kLNGh76A5AwovLKb0NF";
-    private static Long AgentId = 157397978L;
+    private static final String CorpSecret = "N497jceE3LAncfTka6tVoHq8othivgpmLntxyWmcc34i1kLNGh76A5AwovLKb0NF";
+    private static final Long AgentId = 157397978L;
     @RequestMapping(value = "/nothing/mail/send", method = RequestMethod.POST)
     @ResponseBody
     public  String SendEmail(@RequestParam String to,@RequestParam String cc,@RequestParam String subject,@RequestParam String content) throws MessagingException, IOException, InterruptedException {
@@ -103,21 +97,28 @@ public class SendMessageController {
         if (response.getStatusLine().getStatusCode()== HttpStatus.SC_OK){
             String result= EntityUtils.toString(response.getEntity(), "utf-8");
             System.out.println(result);
+            return result;
         }
-        return "success";
+
+        return "error";
     }
 
+
+    /**
+     * 支持text、image、voice、file、link、OA消息类型
+     * 觉得除了text以外别的没用
+     * */
     @RequestMapping(value = "/nothing/ddNoticeMessage/send", method = RequestMethod.POST)
     @ResponseBody
     public String SendEnterpriseNotice(@RequestParam String content,@RequestParam String users) throws ApiException {
         List<String>userList= new ArrayList<>();
         String[] userArray = users.split(",");
-
         for (String a:userArray) {
-            a.trim();
+            a = a.trim();
             String user = personMessageService.queryAllPerson(a);
             userList.add(user);
         }
+
         StringBuffer sb = new StringBuffer();
         for(int i = 0; i < userList.size(); i++){
             sb.append(userList.get(i));

@@ -34,7 +34,7 @@
 //    @Autowired
 //    private RedisTemplate<String,Object> redisTemplate;
 //
-//    @Value("${page.sync.every.count}")
+    //    @Value("${page.sync.every.count}")
 //    private Integer count;
 //
 //    @Autowired

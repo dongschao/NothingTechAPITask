@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.nothing.tech.api.scheduleTask.model.PostShortWebUrl;
 import com.nothing.tech.api.scheduleTask.model.ResponseResult;
 import com.nothing.tech.api.scheduleTask.utils.HttpAccessUtil;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
@@ -24,7 +23,7 @@ public class UpdatePostShortUrlToPostLongUrl {
     private List<PostShortWebUrl> postShortWebUrlList;
     private int requestNum = 10;//每次请求50条
 
-    @Scheduled(fixedDelay = 60000)//方法执行后延迟1秒再次执行获取短连接
+   // @Scheduled(fixedDelay = 60000)//方法执行后延迟1秒再次执行获取短连接
     public void getShortUrl() throws Exception {
         try {
             result = HttpAccessUtil.getShortUrlMethod(queryShortUrl, requestNum);

@@ -21,7 +21,7 @@ public class DDConfiguerController {
     private DDPersonMessageRepository ddPersonMessageRepository;
     @Autowired
     private DDUserGroupRepository ddUserGroupRepository;
-    
+
     @RequestMapping(value = "/nothing/ddConfiguer/getUserMessage", method = RequestMethod.GET)
     @ResponseBody
     public ResponseResult ObtainingEmployeeInformation(){

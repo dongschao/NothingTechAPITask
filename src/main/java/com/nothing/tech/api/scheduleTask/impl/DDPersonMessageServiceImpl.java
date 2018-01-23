@@ -17,7 +17,19 @@ public class DDPersonMessageServiceImpl implements DDPersonMessageService {
     public String queryAllPerson(String mobile){
         return personMessageRepository.queryByUserId(mobile);
     }
-
-
+    @Override
+    public int queryUserId(String userid){
+        return personMessageRepository.queryIsUser(userid);
+    }
+    @Override
+    public void updataMobile(String mobile,String userid)
+    {
+        personMessageRepository.updateMoblie(mobile,userid);
+    }
+//    @Override
+//    public void insertUserMessage(String name,String userid)
+//    {
+//        personMessageRepository.insertUserMessage(name,userid);
+//    }
 
 }
